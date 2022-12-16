@@ -12,7 +12,7 @@
      <hr class="sidebar-divider my-0">
 
      <!-- Nav Item - Dashboard -->
-     <li class="nav-item <?php echo isset($title) && $title ==='dashboard'?'active':'' ?>">
+     <li class="nav-item <?php echo isset($title) && $title === 'dashboard' ? 'active' : '' ?>">
          <a class="nav-link" href="dashboard.php">
              <i class="fas fa-home"></i>
              <span>Dashboard</span>
@@ -21,22 +21,22 @@
 
      <!-- Divider -->
      <hr class="sidebar-divider">
-     <li class="nav-item <?php echo isset($title) && $title ==='category'?'active':'' ?>">
+     <li class="nav-item <?php echo isset($title) && $title === 'category' ? 'active' : '' ?>">
          <a class="nav-link" href="category.php">
              <i class="fas fa-list"></i>
              <span>Category</span>
          </a>
      </li>
      <hr class="sidebar-divider">
-    <li class="nav-item <?php echo isset($title) && $title ==='tag'?'active':'' ?>">
+     <li class="nav-item <?php echo isset($title) && $title === 'tag' ? 'active' : '' ?>">
          <a class="nav-link" href="tag.php">
              <i class="fas fa-list"></i>
              <span>Tag</span>
          </a>
      </li>
      <hr class="sidebar-divider">
-     <li class="nav-item">
-         <a class="nav-link" href="dashboard.php">
+     <li class="nav-item <?php echo isset($title) && $title === 'post' ? 'active' : '' ?>">
+         <a class="nav-link" href="post.php">
              <i class="fas fa-newspaper"></i>
              <span>Post</span>
          </a>

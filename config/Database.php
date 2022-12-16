@@ -1,7 +1,7 @@
 <?php 
     define("SERVER_NAME",'localhost');
     define("USER_NAME",'root');
-    define("PASSWORD",'');
+    define("PASSWORD",'password');
     define("DB_NAME", 'blog23_db');
    
     try{
