@@ -1,38 +1,98 @@
 <?php
+$title = 'post';
 include "layout/head.php";
-$title = 'category';
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    $post_name    = inputValidate($_POST['post_name']);
-    $category_slug    = inputValidate($_POST['category_slug']);
 
 
-    if (empty($post_name)) {
-        $error['post_name'] = 'Category name is required';
+if (isset($_POST['submit'])) {
+
+    $title       = inputValidate($_POST['title']);
+    $slug        = inputValidate($_POST['slug']);
+    $description = $_POST['description'];
+    $category    = inputValidate($_POST['category']);
+    $tags        = $_POST['tag'];
+    $status      = inputValidate($_POST['status']);
+    $fileName    = $_FILES['image']['name'];
+    $fileTmp     = $_FILES['image']['tmp_name'];
+    $fileSize    = $_FILES['image']['size'];
+
+
+    if (empty($title)) {
+        $error['title'] = 'Post title is required';
     } else {
-        $data['post_name'] = $post_name;
+        $data['title'] = $title;
     }
-    if (empty($category_slug)) {
-        $error['category_slug'] = 'Category slug is required';
+    if (empty($slug)) {
+        $error['slug'] = 'Post slug is required';
     } else {
-        $data['category_slug'] = $category_slug;
+        $data['slug'] = $slug;
+    }
+    if (empty($description)) {
+        $error['description'] = 'Post description is required';
+    } else {
+        $data['description'] = $description;
+    }
+    if (empty($category)) {
+        $error['category'] = 'Category is required';
+    } else {
+        $data['category'] = $category;
     }
 
-    if (empty($error['post_name']) && empty($error['category_slug'])) {
+    if (is_array_empty($tags)) {
+        $data['tags'] = $tags;
+    } else {
+        $error['tag'] = 'Tag is required';
+    }
 
+    if (empty($status)) {
+        $error['status'] = 'Status is required';
+    } else {
+        $data['status'] = $status;
+    }
+
+    $ext           = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $allowItem     = array('jpg', 'jpeg', 'png', 'webp');
+    $uniqueImgName = uniqid() . rand(1000, 99999) . '.' . $ext;
+    $upload_Image  = 'uploads/' . $uniqueImgName;
+
+    if (empty($fileName)) {
+        $error['image'] = "Please Select Image First";
+    } elseif ($fileSize > 1048576) {
+        /* max photo size 1mb */
+        $error['image'] = "Image size less then 1mb required";
+    } else {
+        if (!in_array($ext, $allowItem)) {
+            $error['image'] = "Only jpg, jpeg & png allow";
+        } else {
+            $data['image'] = $uniqueImgName;
+        }
+    }
+
+    if (empty($error['title']) && empty($error['slug']) && empty($error['description']) && empty($error['category']) && empty($error['tag']) && empty($error['image']) && empty($error['status'])) {
+        $cdTime = date('Y-m-d H:i:s');
         try {
-            $sql = "INSERT INTO category(name,slug)VALUES(:name, :slug)";
+            $sql = "INSERT INTO post(admin_id, category_id, title, slug, description, image, is_published, created_at)
+                                VALUES(:admin_id, :category_id,:title,:slug,:description,:image,:is_published,:created_at)";
             if ($stmt = $conn->prepare($sql)) {
-                $stmt->bindParam(':name', $data['post_name'], PDO::PARAM_STR);
-                $stmt->bindParam(':slug', $data['category_slug'], PDO::PARAM_STR);
+                $stmt->bindParam(':admin_id', $_SESSION['id'], PDO::PARAM_INT);
+                $stmt->bindParam(':category_id', $data['category'], PDO::PARAM_INT);
+                $stmt->bindParam(':title', $data['slug'], PDO::PARAM_STR);
+                $stmt->bindParam(':slug', $data['slug'], PDO::PARAM_STR);
+                $stmt->bindParam(':description', $data['description'], PDO::PARAM_STR);
+                $stmt->bindParam(':image', $upload_Image, PDO::PARAM_STR);
+                $stmt->bindParam(':is_published', $data['status'], PDO::PARAM_STR);
+                $stmt->bindParam(':created_at', $cdTime, PDO::PARAM_STR);
+
                 if ($stmt->execute()) {
-                    $_SESSION['success'] = "Category inserted successfully";
-                    header('location:category.php');
+                    $lastId = $stmt->lastInsertId();               
+                    if ($fileName != null) {
+                        move_uploaded_file($fileTmp, $upload_Image);
+                    }
+                    $_SESSION['success'] = "Post inserted successfully ";
+                    header('location:post.php');
                 }
             }
         } catch (PDOException $e) {
-            die("ERROR: Could not prepare/execute query: $sql. " . $e->getMessage());
+            die('Could not prepare/execute query: ' . $slq . $e->getMessage());
         }
     }
 }
@@ -66,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Page Heading -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Post</h1>
-                    <a href="post.php" class="d-none d-sm-inline-block btn  btn-danger shadow-sm">
+                    <a href="category.php" class="d-none d-sm-inline-block btn  btn-danger shadow-sm">
                         <i class="fas fa-reply fa-sm "></i>
                         Back to list
                     </a>
@@ -78,18 +138,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <h6 class="m-0 font-weight-bold text-primary">Post Create</h6>
                     </div>
                     <div class="card-body">
-                        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post">
+                        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post" enctype="multipart/form-data">
                             <div class="row">
-                                <div class="col-md-7">
+                                <div class="col-md-8">
                                     <div class="form-group">
-                                        <label for="post_title">Post title</label>
-                                        <input type="text" name="post_title" class="form-control" id="post_title">
-                                        <small id="post_title" class="form-text text-danger">
+                                        <label for="title">Post Title </label>
+                                        <input type="text" name="title" class="form-control" id="title">
+                                        <small id="title" class="form-text text-danger">
                                             <?php
-                                            echo $error['post_title'] ?? '';
+                                            echo $error['title'] ?? '';
                                             ?>
                                         </small>
-                                    </div>
+                                    </div><!-- //title end -->
                                     <div class="form-group">
                                         <label for="slug">Post Slug</label>
                                         <input type="text" name="slug" class="form-control" id="slug">
@@ -98,19 +158,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             echo $error['slug'] ?? '';
                                             ?>
                                         </small>
-                                    </div>
+                                    </div><!-- //slug end -->
                                     <div class="form-group">
                                         <label for="description">Post Description</label>
-                                        <textarea type="text" name="description" class="form-control" id="description"></textarea>
+                                        <textarea name="description" class="form-control" id="description"></textarea>
                                         <small id="description" class="form-text text-danger">
                                             <?php
                                             echo $error['description'] ?? '';
                                             ?>
                                         </small>
-                                    </div>
-
+                                    </div><!-- //description end -->
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="image">Post Image</label>
                                         <input type="file" name="image" class="form-control dropify" id="image">
@@ -121,8 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         </small>
                                     </div>
                                     <div class="form-group">
-                                        <label>Select Category</label>
-                                        <select class="custom-select" name="category">
+                                        <label for="category">Select Category</label>
+                                        <select class="custom-select" name="category" id="category">
                                             <option selected disabled>Select Category</option>
                                             <?php
                                             $sql = "SELECT * FROM category";
@@ -130,50 +189,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             $stmt->execute();
                                             $categories = $stmt->fetchAll(PDO::FETCH_OBJ);
                                             if ($categories) {
-                                                foreach ($categories as $key => $category) { ?>
+
+                                                foreach ($categories as  $category) { ?>
                                                     <option value="<?php echo $category->id; ?>"><?php echo $category->name; ?></option>
                                             <?php
                                                 }
                                             }
                                             ?>
+
                                         </select>
+                                        <small id="category" class="form-text text-danger">
+                                            <?php
+                                            echo $error['category'] ?? '';
+                                            ?>
+                                        </small>
                                     </div>
                                     <div class="form-group">
-                                        <label>Select Tags</label>
-                                        <select class="custom-select select2" name="tags[]" multiple>
-                                            <option  disabled>Select Tags</option>
+                                        <label for="tag">Select Tags</label>
+                                        <select class="custom-select" name="tag[]" multiple id="tag">
+                                            <option disabled>Select tags</option>
                                             <?php
                                             $sql = "SELECT * FROM tag";
                                             $stmt = $conn->prepare($sql);
                                             $stmt->execute();
                                             $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
                                             if ($tags) {
-                                                foreach ($tags as $key => $tag) { ?>
+                                                foreach ($tags as  $tag) { ?>
                                                     <option value="<?php echo $tag->id; ?>"><?php echo $tag->name; ?></option>
                                             <?php
                                                 }
                                             }
                                             ?>
                                         </select>
+                                        <small id="tag" class="form-text text-danger">
+                                            <?php
+                                            echo $error['tag'] ?? '';
+                                            ?>
+                                        </small>
                                     </div>
+
+                                    <!-- post status -->
                                     <div class="form-group">
-                                        <label class="d-block mb-2">Post Status</label>
+                                        <label class="d-block" for="">Post Status</label>
                                         <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="published" name="status" class="custom-control-input">
+                                            <input type="radio" id="published" value="Published" name="status" class="custom-control-input">
                                             <label class="custom-control-label" for="published">Published</label>
                                         </div>
                                         <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="draft" name="status" class="custom-control-input">
+                                            <input type="radio" id="draft" name="status" value="Draft" class="custom-control-input">
                                             <label class="custom-control-label" for="draft">Draft</label>
                                         </div>
+                                        <small id="status" class="form-text text-danger">
+                                            <?php
+                                            echo $error['status'] ?? '';
+                                            ?>
+                                        </small>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="submit" name="submit" class="btn btn-primary">Submit</button>
                             </div>
-
                         </form>
                     </div>
                 </div>
@@ -188,29 +265,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         include "layout/footer.php";
         include "layout/_script.php";
         ?>
-        <script src="vendor/dropify/js/dropify.min.js"></script>
+        <!-- include summernote css/js -->
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
-
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="vendor/dropify/js/dropify.min.js"></script>
+
         <script>
-            $('.dropify').dropify();
             $(document).ready(function() {
                 $('#description').summernote({
                     height: 300
                 });
 
-                $('.select2').select2();
+                /* dropify active */
+                $('.dropify').dropify();
+
+                $('#tag').select2();
             });
 
-            $('#post_name').on('keyup', function() {
-
-                $('#category_slug').val('')
-
+            $('#title').on('keyup', function() {
+                $('#slug').val('')
                 var category = $(this).val();
-                category = category.toLowerCase();
-                category = category.replace(/[^a-zA-Z0-9]+/g, '-');
-                $('#category_slug').val(category)
+                category = slugify(category);
+                $('#slug').val(category)
             })
+
+            function slugify(text) {
+                return text.toLowerCase()
+                    .replace(text, text)
+                    .replace(/^-+|-+$/g, '')
+                    .replace(/\s/g, '-')
+                    .replace(/\-\-+/g, '-');
+            }
         </script>
 
         </body>
