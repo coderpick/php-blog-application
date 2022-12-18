@@ -1,6 +1,6 @@
 <?php
 include "layout/head.php";
-$title='tag';
+$title = 'tag';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('location:tag.php');
                 }
             }
-        }catch (PDOException $e) {
+        } catch (PDOException $e) {
             die("ERROR: Could not prepare/execute query: $sql. " . $e->getMessage());
         }
     }
@@ -94,7 +94,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post">
                             <div class="form-group">
                                 <label for="tag_name">Tag Name</label>
-                                <input type="text" name="tag_name" value="<?php echo $row->name??'';?>" class="form-control" id="tag_name">
+                                <input type="text" name="tag_name" value="<?php echo $row->name ?? ''; ?>" class="form-control" id="tag_name">
                                 <small id="tag_name" class="form-text text-danger">
                                     <?php
                                     echo $error['tag_name'] ?? '';
@@ -103,7 +103,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                             </div>
                             <div class="form-group">
                                 <label for="tag_slug">Tag Slug</label>
-                                <input type="text" name="tag_slug" value="<?php echo $row->slug??'';?>" class="form-control" id="tag_slug">
+                                <input type="text" name="tag_slug" value="<?php echo $row->slug ?? ''; ?>" class="form-control" id="tag_slug">
                                 <small id="tag_slug" class="form-text text-danger">
                                     <?php
                                     echo $error['tag_slug'] ?? '';
@@ -130,14 +130,18 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
         <script>
             $('#tag_name').on('keyup', function() {
-
-                $('#tag_slug').val('')
-
-                var category = $(this).val();
-                category = category.toLowerCase();
-                category = category.replace(/[^a-zA-Z0-9]+/g, '-');
-                $('#tag_slug').val(category)
+                $('#category_slug').val('')
+                var tag = $(this).val();
+                tag = slugify(tag);
+                $('#tag_slug').val(tag)
             })
+            function slugify(text) {
+                return text.toLowerCase()
+                    .replace(text, text)
+                    .replace(/^-+|-+$/g, '')
+                    .replace(/\s/g, '-')
+                    .replace(/\-\-+/g, '-');
+            }
         </script>
 
         </body>

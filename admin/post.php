@@ -70,7 +70,6 @@ $title = 'post';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC; -->
                                     <?php
                                     $sql = "SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC";
                                     $stmt = $conn->prepare($sql);
@@ -94,10 +93,10 @@ $title = 'post';
 
                                                 </td>
                                                 <td width="12%">
-                                                    <a href="" class="btn btn-info">
+                                                    <a href="postDetails.php?id=<?php echo $post->id; ?>" class="btn btn-secondary">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="" class="btn btn-success">
+                                                    <a href="postEdit.php?id=<?php echo $post->id; ?>" class="btn btn-success">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <a href="" class="btn btn-danger">

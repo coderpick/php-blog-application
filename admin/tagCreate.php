@@ -1,6 +1,6 @@
 <?php
 include "layout/head.php";
-$title='tag';
+$title = 'tag';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('location:tag.php');
                 }
             }
-        }catch (PDOException $e) {
+        } catch (PDOException $e) {
             die("ERROR: Could not prepare/execute query: $sql. " . $e->getMessage());
         }
     }
@@ -116,15 +116,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         ?>
 
         <script>
+           
             $('#tag_name').on('keyup', function() {
-
-                $('#tag_slug').val('')
-
-                var category = $(this).val();
-                category = category.toLowerCase();
-                category = category.replace(/[^a-zA-Z0-9]+/g, '-');
-                $('#tag_slug').val(category)
+                $('#category_slug').val('')
+                var tag = $(this).val();
+                tag = slugify(tag);
+                $('#tag_slug').val(tag)
             })
+            function slugify(text) {
+                return text.toLowerCase()
+                    .replace(text, text)
+                    .replace(/^-+|-+$/g, '')
+                    .replace(/\s/g, '-')
+                    .replace(/\-\-+/g, '-');
+            }
         </script>
 
         </body>

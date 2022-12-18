@@ -1,6 +1,6 @@
 <?php
 include "layout/head.php";
-$title='category';
+$title = 'category';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('location:category.php');
                 }
             }
-        }catch (PDOException $e) {
+        } catch (PDOException $e) {
             die("ERROR: Could not prepare/execute query: $sql. " . $e->getMessage());
         }
     }
@@ -94,7 +94,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post">
                             <div class="form-group">
                                 <label for="category_name">Category Name</label>
-                                <input type="text" name="category_name" value="<?php echo $row->name??'';?>" class="form-control" id="category_name">
+                                <input type="text" name="category_name" value="<?php echo $row->name ?? ''; ?>" class="form-control" id="category_name">
                                 <small id="category_name" class="form-text text-danger">
                                     <?php
                                     echo $error['category_name'] ?? '';
@@ -103,7 +103,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                             </div>
                             <div class="form-group">
                                 <label for="category_slug">Category Slug</label>
-                                <input type="text" name="category_slug" value="<?php echo $row->slug??'';?>" class="form-control" id="category_slug">
+                                <input type="text" name="category_slug" value="<?php echo $row->slug ?? ''; ?>" class="form-control" id="category_slug">
                                 <small id="category_slug" class="form-text text-danger">
                                     <?php
                                     echo $error['category_slug'] ?? '';
@@ -130,14 +130,18 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
         <script>
             $('#category_name').on('keyup', function() {
-
                 $('#category_slug').val('')
-
                 var category = $(this).val();
-                category = category.toLowerCase();
-                category = category.replace(/[^a-zA-Z0-9]+/g, '-');
+                category = slugify(category);
                 $('#category_slug').val(category)
             })
+            function slugify(text) {
+                return text.toLowerCase()
+                    .replace(text, text)
+                    .replace(/^-+|-+$/g, '')
+                    .replace(/\s/g, '-')
+                    .replace(/\-\-+/g, '-');
+            }
         </script>
 
         </body>

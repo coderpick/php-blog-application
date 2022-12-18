@@ -1,0 +1,25 @@
+.blog-posts .blog-post {
+    margin-bottom: 30px;
+}
+
+.blog-posts .blog-thumb img {
+    width: 100%;
+    overflow: hidden;
+}
+
+.category {
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 900;
+    color: #f48840;
+}
+
+.blog-thumb img {
+    width: 100%;
+}
+
+.down-content h4 {
+    font-size: 24px;
+    letter-spacing: 0.25px;
+}

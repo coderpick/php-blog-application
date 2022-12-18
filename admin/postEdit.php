@@ -52,7 +52,7 @@ if (isset($_POST['submit'])) {
     $ext           = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
     $allowItem     = array('jpg', 'jpeg', 'png', 'webp');
     $uniqueImgName = uniqid() . rand(1000, 99999) . '.' . $ext;
-    $upload_Image  = 'uploads/post/' . $uniqueImgName;
+    $upload_Image  = 'uploads/' . $uniqueImgName;
 
     if (empty($fileName)) {
         $error['image'] = "Please Select Image First";
@@ -111,6 +111,17 @@ if (isset($_POST['submit'])) {
     }
 }
 
+if (isset($_GET['id']) && !empty($_GET['id'])) {
+    $id = $_GET['id'];
+    /*select item for delete image*/
+    $sql = "SELECT * FROM post WHERE id=:id";
+    $selectStmt = $conn->prepare($sql);
+    $selectStmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $selectStmt->execute();
+    $post = $selectStmt->fetch(PDO::FETCH_OBJ);
+   // print_r($post);
+}
+
 ?>
 
 <!-- Page Wrapper -->
@@ -127,16 +138,13 @@ if (isset($_POST['submit'])) {
 
         <!-- Main Content -->
         <div id="content">
-
             <!-- Topbar -->
             <?php
             include "layout/topbar.php";
             ?>
             <!-- End of Topbar -->
-
             <!-- Begin Page Content -->
             <div class="container-fluid">
-
                 <!-- Page Heading -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Post</h1>
@@ -145,11 +153,10 @@ if (isset($_POST['submit'])) {
                         Back to list
                     </a>
                 </div>
-
                 <!-- DataTales Example -->
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Post Create</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Post Edit</h6>
                     </div>
                     <div class="card-body">
                         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post" enctype="multipart/form-data">
@@ -157,7 +164,7 @@ if (isset($_POST['submit'])) {
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label for="title">Post Title </label>
-                                        <input type="text" name="title" class="form-control" id="title">
+                                        <input type="text" name="title" class="form-control" value="<?php echo $post->title; ?>" id="title">
                                         <small id="title" class="form-text text-danger">
                                             <?php
                                             echo $error['title'] ?? '';
@@ -166,7 +173,7 @@ if (isset($_POST['submit'])) {
                                     </div><!-- //title end -->
                                     <div class="form-group">
                                         <label for="slug">Post Slug</label>
-                                        <input type="text" name="slug" class="form-control" id="slug">
+                                        <input type="text" name="slug" class="form-control" value="<?php echo $post->slug; ?>" id="slug">
                                         <small id="slug" class="form-text text-danger">
                                             <?php
                                             echo $error['slug'] ?? '';
@@ -175,7 +182,7 @@ if (isset($_POST['submit'])) {
                                     </div><!-- //slug end -->
                                     <div class="form-group">
                                         <label for="description">Post Description</label>
-                                        <textarea name="description" class="form-control" id="description"></textarea>
+                                        <textarea name="description" class="form-control" id="description"><?php echo $post->description; ?></textarea>
                                         <small id="description" class="form-text text-danger">
                                             <?php
                                             echo $error['description'] ?? '';
@@ -186,7 +193,7 @@ if (isset($_POST['submit'])) {
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="image">Post Image</label>
-                                        <input type="file" name="image" class="form-control dropify" id="image">
+                                        <input type="file" name="image" class="form-control dropify" data-default-file="<?php echo $post->image; ?>" id="image">
                                         <small id="image" class="form-text text-danger">
                                             <?php
                                             echo $error['image'] ?? '';
@@ -196,7 +203,7 @@ if (isset($_POST['submit'])) {
                                     <div class="form-group">
                                         <label for="category">Select Category</label>
                                         <select class="custom-select" name="category" id="category">
-                                            <option selected disabled>Select Category</option>
+                                            <option  disabled>Select Category</option>
                                             <?php
                                             $sql = "SELECT * FROM category";
                                             $stmt = $conn->prepare($sql);
@@ -205,7 +212,7 @@ if (isset($_POST['submit'])) {
                                             if ($categories) {
 
                                                 foreach ($categories as  $category) { ?>
-                                                    <option value="<?php echo $category->id; ?>"><?php echo $category->name; ?></option>
+                                                    <option <?php echo $post->category_id == $category->id? 'selected':'' ?> value="<?php echo $category->id; ?>"><?php echo $category->name; ?></option>
                                             <?php
                                                 }
                                             }
@@ -263,7 +270,7 @@ if (isset($_POST['submit'])) {
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+                                <button type="submit" name="submit" class="btn btn-primary">Update</button>
                             </div>
                         </form>
                     </div>

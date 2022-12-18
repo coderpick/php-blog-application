@@ -1,6 +1,6 @@
 <?php
 include "layout/head.php";
-$title='category';
+$title = 'category';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('location:category.php');
                 }
             }
-        }catch (PDOException $e) {
+        } catch (PDOException $e) {
             die("ERROR: Could not prepare/execute query: $sql. " . $e->getMessage());
         }
     }
@@ -118,14 +118,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <script>
             $('#category_name').on('keyup', function() {
-
                 $('#category_slug').val('')
-
                 var category = $(this).val();
-                category = category.toLowerCase();
-                category = category.replace(/[^a-zA-Z0-9]+/g, '-');
+                category =slugify(category);
                 $('#category_slug').val(category)
             })
+            function slugify(text) {
+                return text.toLowerCase()
+                    .replace(text, text)
+                    .replace(/^-+|-+$/g, '')
+                    .replace(/\s/g, '-')
+                    .replace(/\-\-+/g, '-');
+            }
         </script>
 
         </body>
