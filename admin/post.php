@@ -61,36 +61,55 @@ $title = 'post';
                                 <thead>
                                     <tr>
                                         <th>S/N</th>
-                                        <th>Name</th>
-                                        <th>Slug</th>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Category</th>
+                                        <th>Create Date</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-
                                 <tbody>
+                                    <!-- SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC; -->
                                     <?php
-                                    $sql = "SELECT * FROM category";
+                                    $sql = "SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC";
                                     $stmt = $conn->prepare($sql);
                                     $stmt->execute();
-                                    $categories = $stmt->fetchAll(PDO::FETCH_OBJ);
-                                    if ($categories) {
-                                        foreach ($categories as $key => $category) { ?>
+                                    $posts = $stmt->fetchAll(PDO::FETCH_OBJ);
+                                    if ($posts) {
+                                        foreach ($posts as $key => $post) { ?>
                                             <tr>
                                                 <td><?php echo $key + 1; ?></td>
-                                                <td><?php echo $category->name; ?></td>
-                                                <td><?php echo $category->slug; ?></td>
-                                                <td width="14%">
-                                                    <a href="categoryEdit.php?id=<?php echo $category->id; ?>" class="btn btn-success"><i class="fas fa-edit"></i></a>
-                                                    <a href="categoryDelete.php?id=<?php echo $category->id; ?>" onclick="return confirm('Are you sure to delete?')" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
-                                                </td>
+                                                <td><?php echo $post->title; ?></td>
+                                                <td><?php echo $post->Author; ?></td>
+                                                <td><?php echo $post->categoryName; ?></td>
+                                                <td><?php echo $post->created_at; ?></td>
+                                                <td>
+                                                    <?php
+                                                    if ($post->is_published == 'Published') { ?>
+                                                        <span class="badge badge-success">Published</span>
+                                                    <?php  } else { ?>
+                                                        <span class="badge badge-danger">Draft</span>
+                                                    <?php } ?>
 
+                                                </td>
+                                                <td width="12%">
+                                                    <a href="" class="btn btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="" class="btn btn-success">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="" class="btn btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </td>
                                             </tr>
+
                                     <?php
                                         }
                                     }
-
                                     ?>
-
 
                                 </tbody>
                             </table>

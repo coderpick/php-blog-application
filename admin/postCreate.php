@@ -70,6 +70,7 @@ if (isset($_POST['submit'])) {
     if (empty($error['title']) && empty($error['slug']) && empty($error['description']) && empty($error['category']) && empty($error['tag']) && empty($error['image']) && empty($error['status'])) {
         $cdTime = date('Y-m-d H:i:s');
         try {
+         
             $sql = "INSERT INTO post(admin_id, category_id, title, slug, description, image, is_published, created_at)
                                 VALUES(:admin_id, :category_id,:title,:slug,:description,:image,:is_published,:created_at)";
             if ($stmt = $conn->prepare($sql)) {
@@ -81,18 +82,31 @@ if (isset($_POST['submit'])) {
                 $stmt->bindParam(':image', $upload_Image, PDO::PARAM_STR);
                 $stmt->bindParam(':is_published', $data['status'], PDO::PARAM_STR);
                 $stmt->bindParam(':created_at', $cdTime, PDO::PARAM_STR);
+                $stmt->execute();
+             
+                $lastId = $conn->lastInsertId();    
 
-                if ($stmt->execute()) {
-                    $lastId = $stmt->lastInsertId();               
+                /* insert post tags */
+                if($data['tags']){
+                    foreach ($tags as $key => $tag) {
+                        $sql = "INSERT INTO post_tag(post_id,tag_id)VALUES(:post_id,:tag_id)";
+                        if ($stmt = $conn->prepare($sql)) {
+                            $stmt->bindParam(':post_id', $lastId, PDO::PARAM_INT);
+                            $stmt->bindParam(':tag_id', $tags[$key], PDO::PARAM_INT);
+                            $stmt->execute();
+                        }
+                    }
+                }
+                if  ($lastId) {                               
                     if ($fileName != null) {
                         move_uploaded_file($fileTmp, $upload_Image);
                     }
-                    $_SESSION['success'] = "Post inserted successfully ";
+                    $_SESSION['success'] = "Post inserted successfully";
                     header('location:post.php');
                 }
             }
-        } catch (PDOException $e) {
-            die('Could not prepare/execute query: ' . $slq . $e->getMessage());
+        } catch (PDOException $e) {          
+            die('ERROR: Could not able to prepare/execute query: ' . $slq . $e->getMessage());
         }
     }
 }
