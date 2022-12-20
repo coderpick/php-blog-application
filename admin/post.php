@@ -71,14 +71,14 @@ $title = 'post';
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC";
+                                    $sql = "SELECT post.id,post.title,post.is_published,post.created_at,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC ";
                                     $stmt = $conn->prepare($sql);
                                     $stmt->execute();
                                     $posts = $stmt->fetchAll(PDO::FETCH_OBJ);
                                     if ($posts) {
                                         foreach ($posts as $key => $post) { ?>
                                             <tr>
-                                                <td><?php echo $key + 1; ?></td>
+                                                <td><?php echo $key+1; ?></td>
                                                 <td><?php echo $post->title; ?></td>
                                                 <td><?php echo $post->Author; ?></td>
                                                 <td><?php echo $post->categoryName; ?></td>
@@ -99,7 +99,7 @@ $title = 'post';
                                                     <a href="postEdit.php?id=<?php echo $post->id; ?>" class="btn btn-success">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="" class="btn btn-danger">
+                                                    <a href="postDelete.php?id=<?php echo $post->id; ?>" onclick="return confirm('Are you sure to delete this post?')" class="btn btn-danger">
                                                         <i class="fas fa-trash"></i>
                                                     </a>
                                                 </td>

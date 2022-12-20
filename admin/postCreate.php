@@ -83,9 +83,7 @@ if (isset($_POST['submit'])) {
                 $stmt->bindParam(':is_published', $data['status'], PDO::PARAM_STR);
                 $stmt->bindParam(':created_at', $cdTime, PDO::PARAM_STR);
                 $stmt->execute();
-
                 $lastId = $conn->lastInsertId();
-
                 /* insert post tags */
                 if ($data['tags']) {
                     foreach ($tags as $key => $tag) {

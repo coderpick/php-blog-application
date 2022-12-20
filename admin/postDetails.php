@@ -43,10 +43,14 @@ $title = 'post';
                     </div>
                     <div class="card-body">
                         <?php
-                        $sql = "SELECT post.*,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id ORDER BY post.id DESC";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->execute();
-                        $post = $stmt->fetch(PDO::FETCH_OBJ);
+                        if (isset($_GET['id']) && !empty($_GET['id'])) {
+                            $id = $_GET['id'];
+                            $sql = "SELECT post.*,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id WHERE post.id=:postId";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(':postId', $id, PDO::PARAM_INT);
+                            $stmt->execute();
+                            $post = $stmt->fetch(PDO::FETCH_OBJ);
+                        }
                         ?>
                         <div class="blog-post">
                             <div class="blog-thumb">
@@ -68,14 +72,14 @@ $title = 'post';
                                             <ul class="list-inline d-flex">
                                                 <li class="pr-1"><i class="fa fa-tags"></i></li>
                                                 <?php
-                                                $sql = "SELECT tag.* FROM tag INNER JOIN  post_tag ON tag.id = post_tag.tag_id WHERE post_tag.post_id=:postId";
+                                                $sql = "SELECT tag.* FROM tag INNER JOIN post_tag ON tag.id = post_tag.tag_id WHERE post_id=:postId";
                                                 $stmt = $conn->prepare($sql);
                                                 $stmt->bindParam(':postId', $post->id, PDO::PARAM_INT);
                                                 $stmt->execute();
                                                 $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
-                                                if ($tags) {
+                                                 if ($tags) {
                                                     foreach ($tags as $key => $tag) { ?>
-                                                    <li class="pr-2"><?php echo $tag->name;?></li>
+                                                    <li class="mr-2 badge border"><?php echo $tag->name;?></li>
                                                 <?php
                                                     }
                                                 }

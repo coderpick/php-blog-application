@@ -1,7 +1,7 @@
 <?php
 $title = 'post';
 include "layout/head.php";
-
+error_reporting(0);
 
 if (isset($_POST['submit'])) {
 
@@ -11,6 +11,10 @@ if (isset($_POST['submit'])) {
     $category    = inputValidate($_POST['category']);
     $tags        = $_POST['tag'];
     $status      = inputValidate($_POST['status']);
+    /*post id & post old image*/
+    $postId       = inputValidate($_POST['postId']);
+    $postOldImage = inputValidate($_POST['postOldImage']);
+
     $fileName    = $_FILES['image']['name'];
     $fileTmp     = $_FILES['image']['tmp_name'];
     $fileSize    = $_FILES['image']['size'];
@@ -24,7 +28,7 @@ if (isset($_POST['submit'])) {
     if (empty($slug)) {
         $error['slug'] = 'Post slug is required';
     } else {
-        $data['slug'] = $slug;
+        $data['slug'] = str_slug($slug);
     }
     if (empty($description)) {
         $error['description'] = 'Post description is required';
@@ -48,31 +52,31 @@ if (isset($_POST['submit'])) {
     } else {
         $data['status'] = $status;
     }
+    if ($fileName) {
+        $ext           = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowItem     = array('jpg', 'jpeg', 'png', 'webp');
+        $uniqueImgName = uniqid() . rand(1000, 99999) . '.' . $ext;
+        $upload_Image  = 'uploads/post/' . $uniqueImgName;
 
-    $ext           = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-    $allowItem     = array('jpg', 'jpeg', 'png', 'webp');
-    $uniqueImgName = uniqid() . rand(1000, 99999) . '.' . $ext;
-    $upload_Image  = 'uploads/' . $uniqueImgName;
-
-    if (empty($fileName)) {
-        $error['image'] = "Please Select Image First";
-    } elseif ($fileSize > 1048576) {
-        /* max photo size 1mb */
-        $error['image'] = "Image size less then 1mb required";
-    } else {
-        if (!in_array($ext, $allowItem)) {
-            $error['image'] = "Only jpg, jpeg & png allow";
+        if (in_array($ext, $allowItem)) {
+            if ($fileSize < 1048576) {
+                unlink($postOldImage);
+                move_uploaded_file($fileTmp, $upload_Image);
+            } else {
+                $photoErr = "Image size less then 1mb required";
+            }
         } else {
-            $data['image'] = $uniqueImgName;
+            $photoErr = "Only jpg,jpeg, png & webp allow";
         }
+    } else {
+        $upload_Image = $postOldImage;
     }
+
 
     if (empty($error['title']) && empty($error['slug']) && empty($error['description']) && empty($error['category']) && empty($error['tag']) && empty($error['image']) && empty($error['status'])) {
         $cdTime = date('Y-m-d H:i:s');
         try {
-
-            $sql = "INSERT INTO post(admin_id, category_id, title, slug, description, image, is_published, created_at)
-                                VALUES(:admin_id, :category_id,:title,:slug,:description,:image,:is_published,:created_at)";
+            $sql = "UPDATE post SET admin_id=:admin_id, category_id=:category_id, title=:title,slug=:slug, description=:description, image=:image, is_published=:is_published, updated_at=:updated_at WHERE id=:id";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bindParam(':admin_id', $_SESSION['id'], PDO::PARAM_INT);
                 $stmt->bindParam(':category_id', $data['category'], PDO::PARAM_INT);
@@ -81,29 +85,42 @@ if (isset($_POST['submit'])) {
                 $stmt->bindParam(':description', $data['description'], PDO::PARAM_STR);
                 $stmt->bindParam(':image', $upload_Image, PDO::PARAM_STR);
                 $stmt->bindParam(':is_published', $data['status'], PDO::PARAM_STR);
-                $stmt->bindParam(':created_at', $cdTime, PDO::PARAM_STR);
+                $stmt->bindParam(':updated_at', $cdTime, PDO::PARAM_STR);
+                $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
                 $stmt->execute();
 
                 $lastId = $conn->lastInsertId();
 
-                /* insert post tags */
+                /* select existing post tags */
+                $query = "SELECT * FROM post_tag WHERE post_id=:postId";
+                $stmtForTag = $conn->prepare($query);
+                $stmtForTag->bindParam('postId', $postId,PDO::PARAM_INT);
+                $stmtForTag->execute();
+                $tagIds = $stmtForTag->fetchAll(PDO::FETCH_ASSOC);
+                /*Delete existing post tags*/
+                if ($tagIds){
+                    foreach ($tagIds as $tagId){
+                        $sql ="DELETE FROM post_tag WHERE post_id=:postId";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bindParam('postId', $postId,PDO::PARAM_INT);
+                        $stmt->execute();
+                    }
+                }
+                /* update post tags */
                 if ($data['tags']) {
                     foreach ($tags as $key => $tag) {
                         $sql = "INSERT INTO post_tag(post_id,tag_id)VALUES(:post_id,:tag_id)";
                         if ($stmt = $conn->prepare($sql)) {
-                            $stmt->bindParam(':post_id', $lastId, PDO::PARAM_INT);
+                            $stmt->bindParam(':post_id', $postId, PDO::PARAM_INT);
                             $stmt->bindParam(':tag_id', $tags[$key], PDO::PARAM_INT);
                             $stmt->execute();
                         }
                     }
                 }
-                if ($lastId) {
-                    if ($fileName != null) {
-                        move_uploaded_file($fileTmp, $upload_Image);
-                    }
-                    $_SESSION['success'] = "Post inserted successfully";
-                    header('location:post.php');
-                }
+
+                $_SESSION['success'] = "Post update successfully";
+                header('Location:post.php');
+
             }
         } catch (PDOException $e) {
             die('ERROR: Could not able to prepare/execute query: ' . $slq . $e->getMessage());
@@ -113,13 +130,11 @@ if (isset($_POST['submit'])) {
 
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $id = $_GET['id'];
-    /*select item for delete image*/
     $sql = "SELECT * FROM post WHERE id=:id";
     $selectStmt = $conn->prepare($sql);
     $selectStmt->bindParam(':id', $id, PDO::PARAM_INT);
     $selectStmt->execute();
     $post = $selectStmt->fetch(PDO::FETCH_OBJ);
-   // print_r($post);
 }
 
 ?>
@@ -213,7 +228,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
                                                 foreach ($categories as  $category) { ?>
                                                     <option <?php echo $post->category_id == $category->id? 'selected':'' ?> value="<?php echo $category->id; ?>"><?php echo $category->name; ?></option>
-                                            <?php
+                                                    <?php
                                                 }
                                             }
                                             ?>
@@ -230,14 +245,29 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                         <select class="custom-select" name="tag[]" multiple id="tag">
                                             <option disabled>Select tags</option>
                                             <?php
+                                            /*get post tags id*/
+                                            $query = "SELECT * FROM post_tag WHERE post_id=:postId";
+                                            $stmtForTag = $conn->prepare($query);
+                                            $stmtForTag->bindParam('postId', $post->id,PDO::PARAM_INT);
+                                            $stmtForTag->execute();
+                                            $tagIds = $stmtForTag->fetchAll(PDO::FETCH_OBJ);
+
                                             $sql = "SELECT * FROM tag";
                                             $stmt = $conn->prepare($sql);
                                             $stmt->execute();
                                             $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
                                             if ($tags) {
                                                 foreach ($tags as  $tag) { ?>
-                                                    <option value="<?php echo $tag->id; ?>"><?php echo $tag->name; ?></option>
-                                            <?php
+                                                    <option
+                                                        <?php
+                                                        foreach ($tagIds as $tagId) {
+                                                            if ($tagId->tag_id == $tag->id) {
+                                                                echo "selected";
+                                                            }
+                                                        }
+                                                        ?>
+                                                            value="<?php echo $tag->id; ?>"><?php echo $tag->name; ?></option>
+                                                    <?php
                                                 }
                                             }
                                             ?>
@@ -253,11 +283,11 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                     <div class="form-group">
                                         <label class="d-block" for="">Post Status</label>
                                         <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="published" value="Published" name="status" class="custom-control-input">
+                                            <input type="radio" id="published" value="Published" <?php echo  $post->is_published=='Published'?'checked':''?> name="status" class="custom-control-input">
                                             <label class="custom-control-label" for="published">Published</label>
                                         </div>
                                         <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="draft" name="status" value="Draft" class="custom-control-input">
+                                            <input type="radio" id="draft" <?php echo  $post->is_published=='Draft'?'checked':''?> name="status" value="Draft" class="custom-control-input">
                                             <label class="custom-control-label" for="draft">Draft</label>
                                         </div>
                                         <small id="status" class="form-text text-danger">
@@ -268,7 +298,8 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                     </div>
                                 </div>
                             </div>
-
+                            <input type="hidden" name="postId" value="<?php echo $post->id; ?>">
+                            <input type="hidden" name="postOldImage" value="<?php echo $post->image?? ''; ?>">
                             <div class="text-center">
                                 <button type="submit" name="submit" class="btn btn-primary">Update</button>
                             </div>
