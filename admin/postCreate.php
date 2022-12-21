@@ -304,6 +304,7 @@ if (isset($_POST['submit'])) {
             function slugify(text) {
                 return text.toLowerCase()
                     .replace(text, text)
+                    .replace(/^\s+|\s+$/gm,'')
                     .replace(/^-+|-+$/g, '')
                     .replace(/\s/g, '-')
                     .replace(/\-\-+/g, '-');
