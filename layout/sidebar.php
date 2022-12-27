@@ -21,7 +21,7 @@
                         if ($latestPosts){
                             foreach ($latestPosts as $post){?>
                                 <li>
-                                    <a href="post-details.html">
+                                    <a href="post-details.php?slug=<?php echo $post->slug;?>">
                                         <h5><?php echo $post->title;?></h5>
                                         <span>
                                             <?php

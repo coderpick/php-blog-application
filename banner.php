@@ -17,7 +17,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_OBJ);
                                 <div class="meta-category">
                                     <span><?php echo $post->categoryName??''?></span>
                                 </div>
-                                <a href="post-details.html"><h4><?php echo $post->title??''?></h4></a>
+                                <a href="post-details.php?slug=<?php echo $post->slug;?>"><h4><?php echo $post->title??''?></h4></a>
                                 <ul class="post-info">
                                     <li><a href="#"><?php echo $post->Author??''?></a></li>
                                     <li><a href="#"><?php echo $post->created_at??''?></a></li>

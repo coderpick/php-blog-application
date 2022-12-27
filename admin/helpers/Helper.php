@@ -31,5 +31,13 @@ function str_slug($string){
     $string =preg_replace("/\s+/u","-",trim ($string));
     return $string;
 }
+function str_limit($string, $limit = 100)
+{
+    $string = $string . "";
+    $string = substr($string, 0, $limit);
+    $string = substr($string, 0, strrpos($string, " "));
+    $string = $string . "...";
+    return $string;
+}
 
 ?>

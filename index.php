@@ -56,7 +56,7 @@ include "banner.php";
                                         </div>
                                         <div class="down-content">
                                             <span><?php echo $post->categoryName; ?></span>
-                                            <a href="post-details.html"><h4><?php echo $post->title; ?></h4></a>
+                                            <a href="post-details.php?slug=<?php echo $post->slug;?>"><h4><?php echo $post->title; ?></h4></a>
                                             <ul class="post-info">
                                                 <li><a href="#"><?php echo $post->Author; ?></a></li>
                                                 <li>
@@ -68,7 +68,9 @@ include "banner.php";
                                                     </a>
                                                 </li>
                                             </ul>
-                                            <p></p>
+                                            <p>
+                                                 <?php echo html_entity_decode(str_limit($post->description,200))??''?>
+                                            </p>
                                             <div class="post-options">
                                                 <div class="row">
                                                     <div class="col-6">
@@ -105,7 +107,7 @@ include "banner.php";
 
                         <div class="col-lg-12">
                             <div class="main-button">
-                                <a href="blog.html">View All Posts</a>
+                                <a href="blog.php">View All Posts</a>
                             </div>
                         </div>
                     </div>
