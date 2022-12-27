@@ -12,13 +12,13 @@
 <body>
 
 <!-- ***** Preloader Start ***** -->
-<div id="preloader">
-    <div class="jumper">
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-</div>
+<!--<div id="preloader">-->
+<!--    <div class="jumper">-->
+<!--        <div></div>-->
+<!--        <div></div>-->
+<!--        <div></div>-->
+<!--    </div>-->
+<!--</div>-->
 <!-- ***** Preloader End ***** -->
 
 <!-- Header -->
@@ -84,7 +84,7 @@ include "banner.php";
                                                                 $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
                                                                  if ($tags) {
                                                                     foreach ($tags as $key => $tag) { ?>
-                                                                    <li><a href="#" class="badge badge-primary"><?php echo $tag->name;?></a></li>
+                                                                    <li><a href="tag.php?slug=<?php echo $tag->slug;?>" class="badge badge-primary text-white"><?php echo $tag->name;?></a></li>
                                                                 <?php
                                                                     }
                                                                 }

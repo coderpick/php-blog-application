@@ -28,6 +28,20 @@
 </header>
 
 <!-- Page Content -->
+<!--get url request parameter-->
+<?php
+if (isset($_GET['slug'])){
+    $tagSlug = $_GET['slug'];
+    $sql = "SELECT * FROM tag WHERE slug=:slug";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':slug', $tagSlug, PDO::PARAM_STR);
+    $stmt->execute();
+    $tag = $stmt->fetch(PDO::FETCH_OBJ);
+
+}
+?>
+
+
 <!-- Banner Starts Here -->
 <div class="heading-page header-text">
     <section class="page-heading">
@@ -35,8 +49,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="text-content">
-                        <h4>Recent Posts</h4>
-                        <h2>Our Recent Blog Entries</h2>
+                        <h2><?php echo $tag->name;?> Posts</h2>
                     </div>
                 </div>
             </div>
@@ -44,6 +57,7 @@
     </section>
 </div>
 <!-- Banner Ends Here -->
+
 <section class="blog-posts">
     <div class="container">
         <div class="row">
@@ -51,26 +65,22 @@
                 <div class="all-blog-posts">
                     <div class="row">
                         <?php
-
-                        $perPage     = 2;
+                        $perPage = 2;
                         // Calculate Total pages
                         $stmt = $conn->query('SELECT count(*) FROM post');
                         $total_results = $stmt->fetchColumn();
                         $total_pages = ceil($total_results / $perPage);
 
-                       $currentPage = 1;    // Current page
-                        if ($_GET['page']){
-                              $page = $_GET['page'];
-                              $currentPage =  $page;
-                        }else{
-                             $page = 1;
-                        }
-                        $starting_page = ($page - 1) * $perPage;
+                        // Current page
+                        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+                        $starting_limit = ($page - 1) * $perPage;
 
-                        $sql = "SELECT post.*,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id WHERE is_published='Published' ORDER BY post.id DESC  LIMIT $starting_page,$perPage";
-                        $stmt = $conn->query($sql);
+                        $sql = "SELECT post.*,category.name as categoryName,admin.name as Author FROM post INNER JOIN category ON post.category_id=category.id INNER JOIN admin ON post.admin_id=admin.id INNER JOIN post_tag ON post.id = post_tag.post_id WHERE post_tag.tag_id=:tagId AND post.is_published='Published' ORDER BY post.id DESC LIMIT $starting_limit,$perPage";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bindParam(':tagId', $tag->id, PDO::PARAM_INT);
+                        $stmt->execute();
                         $posts = $stmt->fetchAll(PDO::FETCH_OBJ);
-                        if ($posts){
+                        if ($posts != null){
                             foreach ($posts as $post){?>
                                 <div class="col-lg-6">
                                     <div class="blog-post">
@@ -122,6 +132,8 @@
                                 </div>
                                 <?php
                             }
+                        }else{
+                            echo "No post found";
                         }
                         ?>
                         <hr>
@@ -129,18 +141,12 @@
                         <!--pagination start-->
                         <div class="col-lg-12">
                             <ul class="page-numbers">
-                                <?php for ($i = 1; $i <= $total_pages ; $i++):?>
-                                        <?php
-                                        $active ='';
-                                        if ($currentPage == $i){
-                                            $active = 'active';
-                                        }
-                                    ?>
-                                       <li class="<?php echo $active; ?>">
-                                           <a href='<?php echo "?page=$i"; ?>' class="links">
-                                                 <?php  echo $i; ?>
-                                           </a>
-                                       </li>
+                                <?php for ($page = 1; $page <= $total_pages ; $page++):?>
+                                    <li class="active">
+                                        <a href='<?php echo "?page=$page"; ?>' class="links">
+                                            <?php  echo $page; ?>
+                                        </a>
+                                    </li>
                                 <?php endfor; ?>
                             </ul>
                         </div>

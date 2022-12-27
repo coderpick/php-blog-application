@@ -53,7 +53,7 @@
                         $categories = $stmt->fetchAll(PDO::FETCH_OBJ);
                         if ($categories){
                             foreach ($categories as $category){?>
-                                <li><a href="#">- <?php echo $category->name;?></a></li>
+                                <li><a href="category.php?slug=<?php echo $category->slug;?>">- <?php echo $category->name;?></a></li>
                                 <?php
                             }
                         }
@@ -75,7 +75,7 @@
                         $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
                         if ($tags){
                             foreach ($tags as $tag){?>
-                                <li><a href="#"><?php echo $tag->name;?></a></li>
+                                <li><a href="tag.php?slug=<?php echo $tag->slug;?>"><?php echo $tag->name;?></a></li>
                                 <?php
                             }
                         }

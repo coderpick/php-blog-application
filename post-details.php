@@ -70,7 +70,7 @@ if (isset($_GET['slug']) && !empty($_GET['slug'])) {
                             <div class="col-lg-12">
                                 <div class="blog-post">
                                     <div class="blog-thumb">
-                                        <img src="assets/images/blog-post-02.jpg" alt="">
+                                        <img src="admin/<?php echo $post->image??''?>" alt="">
                                     </div>
                                     <div class="down-content">
                                         <span><?php echo $post->categoryName??''?></span>
@@ -100,7 +100,7 @@ if (isset($_GET['slug']) && !empty($_GET['slug'])) {
                                                         $tags = $stmt->fetchAll(PDO::FETCH_OBJ);
                                                         if ($tags) {
                                                             foreach ($tags as $key => $tag) { ?>
-                                                                <li><a href="#" class="badge badge-primary"><?php echo $tag->name;?></a></li>
+                                                                <li><a href="tag.php?slug=<?php echo $tag->slug;?>" class="badge badge-primary text-white"><?php echo $tag->name;?></a></li>
                                                                 <?php
                                                             }
                                                         }
